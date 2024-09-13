@@ -6,7 +6,9 @@ library(NHSRwaitinglist)
 # Weekly remova
 
 # Simulate WL with 70 entering and 65 exiting per week
-a <- wl_simulator(as.Date('2023-04-01'), as.Date('2024-03-25'), 70, 65)
+a <- wl_simulator(as.Date('2023-04-01'), as.Date('2024-03-25'), 70, 71)
+
+
 
 # Queue size
 wl_queue_size(a)
@@ -22,7 +24,9 @@ removal_stats <- wl_removal_stats(a)
 
 # If we want the average wait to be within a target wait of 18 weeks
 # For approx 2% chance of going over target
-calc_target_mean_wait(18, factor = 4)
+calc_target_mean_wait(18, factor = 2)
+
+
 
 
 # Needs and average wait of 4.5 weeks
