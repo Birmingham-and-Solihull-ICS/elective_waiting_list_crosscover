@@ -28,8 +28,8 @@ Thoughts and contributions are welcome.
 
 To help with this, the project is contains a `.gitignore` file.  This file contains file/folder/file extensions that Git will ignore by default.  If you need to import one of these files, you can do so, but you will need to use the `force` command to do so.
 
-- If using any data files, load them on your local machine to a folder called '/data/' and verify it is not committed. The .gitignore should do this automatically, but please check.
-- Similarly for output, if generating any tables or potentially identifiable data (due to small numbers or record-level tables), add to a folder calle '/output/' and verify it is not committed.  The .gitignore should do this automatically, but please check.
+- If using any data files, load them on your local machine to a folder called `'/data/'` and verify it is not committed. The `.gitignore` should do this automatically, but please check.
+- Similarly for output, if generating any tables or potentially identifiable data (due to small numbers or record-level tables), add to a folder called `'/output/'` and verify it is not committed.  The `.gitignore` should do this automatically, but please check.
 
 
 

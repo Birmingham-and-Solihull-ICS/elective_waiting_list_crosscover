@@ -2,6 +2,8 @@
 # Connect to SQL Server.
 library(tidyverse)
 library(DBI)
+library(patchwork)
+library(scales)
 #library(officer)
 #library(rvg)
 
@@ -23,7 +25,45 @@ and ReferrerCode not like 'R%'"
 
 dt <- dbGetQuery(con, sql)
 
+
+theme_set(
+  theme_minimal()+
+  theme(plot.title = element_text(size=12),
+        plot.subtitle = element_text(size=9, face="italic")
+  )
+)
+
+outliers <-
+  dt %>% 
+  filter(waiting_time_weeks > 104) %>% 
+  group_by(waiting_time_weeks) %>% 
+  count()
+
+# Percent outliers > 2 years 
+sum(outliers$n) /
 dt %>% 
-  filter(waiting_time_weeks < 120) %>% 
+  #filter(waiting_time_weeks > 104) %>% 
+  #group_by(waiting_time_weeks) %>% 
+  count() %>%  pull()
+
+# 0.8%
+
+a<- dt %>% 
+  #filter(waiting_time_weeks < 120) %>% 
   ggplot(aes(x=waiting_time_weeks))+
-  geom_histogram(alpha= 0.7, fill="dodgerblue2", col="black", bins = 100)
+  geom_histogram(alpha= 0.7, fill="dodgerblue2", binwidth=2)+
+  scale_y_continuous(label=comma)+
+  scale_x_continuous("Waiting time (weeks)")+
+  labs(title = "BSOL TnO GP -> First Consultant OP",
+       subtitle = "Unrestricted")
+
+b<- dt %>% 
+  filter(waiting_time_weeks < 104) %>% 
+  ggplot(aes(x=waiting_time_weeks))+
+  geom_histogram(alpha= 0.7, fill="darkolivegreen2", col="black", binwidth=2)+
+  scale_y_continuous(label=comma)+
+  scale_x_continuous("Waiting time (weeks)")+
+  labs(title = "Restricted BSOL TnO GP -> First Consultant OP",
+       subtitle = "Waiting times > 104 excluded")
+
+a + b
