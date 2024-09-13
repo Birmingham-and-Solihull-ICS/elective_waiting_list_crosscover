@@ -12,10 +12,10 @@ This git repository holds the code for our scoping of waiting list calculations 
 To quantify the waiting list, calculate pressures, relief capacity and time to clearance to excess WL down to sustainable number.  
 More specifically: 
 
-- We need to get to a point where reducign waiting list with capacity > demand	
+- We need to get to a point where reducing waiting list with capacity > demand	
 -	Demand would reduce under demand management from Crosscover, so estimating 20% further reduction effects on WL
 -	Sustainable WL number for 18 week	
--	Average wait at sustainable	numer
+-	Average wait at sustainable	number
 -	Time to bring the waiting list down	sustainable number
 -	What would we need to reduce to 18 weeks, if it takes 12 months to procure and set up, how many years/months to reach target wait?)	
 
@@ -28,8 +28,8 @@ Thoughts and contributions are welcome.
 
 To help with this, the project is contains a `.gitignore` file.  This file contains file/folder/file extensions that Git will ignore by default.  If you need to import one of these files, you can do so, but you will need to use the `force` command to do so.
 
-- If using any data files, load them on your local machine to the '/data' folder and verify it is not committed.
-- Similarly for output, if generating any tables or potentially identifiable data (due to small numbers or record-level tables), add to the '/output' folder and verify it is not committed.
+- If using any data files, load them on your local machine to a folder called '/data/' and verify it is not committed. The .gitignore should do this automatically, but please check.
+- Similarly for output, if generating any tables or potentially identifiable data (due to small numbers or record-level tables), add to a folder calle '/output/' and verify it is not committed.  The .gitignore should do this automatically, but please check.
 
 
 
