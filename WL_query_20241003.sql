@@ -209,3 +209,17 @@ group by Week_ending_date
 
 select *, datename(weekday,Week_Ending_Date) as thedow from ##BSOLtempChrisM_WeekEnding
 order by 1
+
+
+-- Count up
+select wk.Week_Ending_Date,
+wk.Pathways_Quantity,
+count(pt_add.Date_Added) as pt_add  ,
+count(pt_remove.Date_Removed) as pt_remove
+from ##BSOLtempChrisM_WeekEnding wk
+left join ##BSOLtempChrisM  pt_add ON wk.Week_Ending_Date = pt_add.Date_Added
+left join ##BSOLtempChrisM  pt_remove ON wk.Week_Ending_Date = pt_add.FirstWE_PreRemove
+group by wk.Week_Ending_Date,
+wk.Pathways_Quantity
+order by 1
+Select * from ##BSOLtempChrisM 
