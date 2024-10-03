@@ -4,14 +4,14 @@ library(tidyverse)
 library(NHSRwaitinglist)
 
 
-demand_phase1 = 300
-demand_phase2 =
+demand_phase1 = 416# 300
+demand_phase2 = 434
 demand_phase3 = demand_phase2 * 0.6  # 40 percent of demand taken out by CC
-capacity_phase1 = 248
-capacity_phase2 =
+capacity_phase1 = 382 # 248
+capacity_phase2 = 454
 capacity_phase3 = capacity_phase2  # 40 percent of demand taken out by CC
 
-phase_1_start = as.Date("2021-04-01")
+phase_1_start = as.Date("2019-04-01")
 phase_1_end = as.Date("2023-08-31")
 phase_2_start = phase_1_end + 1 
 phase_2_end = as.Date("2027-03-31")

@@ -211,15 +211,41 @@ select *, datename(weekday,Week_Ending_Date) as thedow from ##BSOLtempChrisM_Wee
 order by 1
 
 
+
+
 -- Count up
 select wk.Week_Ending_Date,
 wk.Pathways_Quantity,
 count(pt_add.Date_Added) as pt_add  ,
 count(pt_remove.Date_Removed) as pt_remove
 from ##BSOLtempChrisM_WeekEnding wk
-left join ##BSOLtempChrisM  pt_add ON wk.Week_Ending_Date = pt_add.Date_Added
-left join ##BSOLtempChrisM  pt_remove ON wk.Week_Ending_Date = pt_add.FirstWE_PreRemove
+left join ##BSOLtempChrisM  pt_add ON wk.Week_Ending_Date = pt_add.Date_Added and pt_add.Date_Added is not null
+left join ##BSOLtempChrisM  pt_remove ON wk.Week_Ending_Date = pt_remove.FirstWE_PreRemove and pt_remove.FirstWE_PreRemove is not null
 group by wk.Week_Ending_Date,
 wk.Pathways_Quantity
 order by 1
+
+
+select wk.Week_Ending_Date,
+wk.Pathways_Quantity,
+added,
+removed
+from ##BSOLtempChrisM_WeekEnding wk
+left join (
+			Select FirstWE_PreRemove, count(*) as removed
+			FROM ##BSOLtempChrisM
+			Where FirstWE_PreRemove is not null
+			group by FirstWE_PreRemove
+			--order by FirstWE_PreRemove
+			) pt_remove ON wk.Week_Ending_Date = pt_remove.FirstWE_PreRemove 
+
+left join (
+			Select Date_Added, count(*) as added
+			FROM ##BSOLtempChrisM
+			Where Date_Added is not null
+			group by Date_Added
+			--order by Date_Added 
+			) pt_add ON wk.Week_Ending_Date = pt_add.Date_Added 
+order by Week_Ending_Date
+
 Select * from ##BSOLtempChrisM 
