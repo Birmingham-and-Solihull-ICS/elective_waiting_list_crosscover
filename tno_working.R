@@ -1,17 +1,32 @@
 # Generate artificial T&O scenario using real data control parameters
 
+
+# Connect to SQL Server.
 library(tidyverse)
+#library(DBI)
+library(patchwork)
+library(scales)
+#library(zoo)
 library(NHSRwaitinglist)
+#library(officer)
+
+# set ggplot theme
+theme_set(
+  theme_minimal()+
+    theme(plot.title = element_text(size=12),
+          plot.subtitle = element_text(size=9, face="italic")
+    )
+)
 
 
-demand_phase1 = 416# 300
-demand_phase2 = 434
-demand_phase3 = demand_phase2 * 0.6  # 40 percent of demand taken out by CC
-capacity_phase1 = 382 # 248
-capacity_phase2 = 454
+demand_phase1 = 428# 300
+demand_phase2 = 432
+demand_phase3 = demand_phase2 * 0.8 # 40 percent of demand taken out by CC
+capacity_phase1 = 387 # 248
+capacity_phase2 = 451
 capacity_phase3 = capacity_phase2  # 40 percent of demand taken out by CC
 
-phase_1_start = as.Date("2019-04-01")
+phase_1_start = as.Date("2020-04-01")
 phase_1_end = as.Date("2023-08-31")
 phase_2_start = phase_1_end + 1 
 phase_2_end = as.Date("2027-03-31")
@@ -34,14 +49,17 @@ ggplot(tno_queue1, aes(dates, queue_size)) +
     subtitle = paste("Phase 1: baseline setting up waiting list \nCapacity = ", capacity_phase1, ", Demand=", demand_phase1),
     y = "Queue Size",
     x = "Month"
-  )
+  )+
+  scale_y_continuous(labels = comma)
 
 
 # Nicely guessed to meet peak of 6338 on list at Sept-2023
 # Now we clear as per current rates
 
 tno_sim2 <-
-  wl_simulator(phase_2_start, phase_2_end, demand_phase2, capacity_phase2)
+  wl_simulator(phase_2_start, phase_2_end, demand_phase2, capacity_phase2
+               , waiting_list = tno_sim1)
+
 
 tno_queue2 <-
   wl_queue_size(tno_sim2)
@@ -55,12 +73,14 @@ ggplot(tno_queue2, aes(dates, queue_size)) +
     y = "Queue Size",
     x = "Month"
     
-  )
+  ) +
+  scale_y_continuous(labels = comma)
 
 
 # Waiting list with 40% off after this date
 tno_sim3 <-
-  wl_simulator(phase_3_start, phase_3_end, demand_phase3, capacity_phase3)
+  wl_simulator(phase_3_start, phase_3_end, demand_phase3, capacity_phase3, 
+                 waiting_list = tno_sim2)
 
 tno_queue3 <-
   wl_queue_size(tno_sim3)
@@ -80,15 +100,15 @@ ggplot(tno_queue3, aes(dates, queue_size)) +
 
 # Join waiting list
 
-tno_wl2 <- wl_join(tno_sim1, tno_sim2)
-tno_wl3 <- wl_join(tno_wl2, tno_sim3)
+#tno_wl2 <- wl_join(tno_sim1, tno_sim2)
+#tno_wl3 <- wl_join(tno_wl2, tno_sim3)
 
 
-# Plot with implementation at March 27, then add 40% drop in demand
+# Plot with implementation at March 27, then add 20% drop in demand
 
-tno_combined_queue <- wl_queue_size(tno_wl3)
+#tno_combined_queue <- wl_queue_size(tno_wl3)
 
-ggplot(tno_combined_queue, aes(dates, queue_size)) +
+ggplot(tno_queue3, aes(dates, queue_size)) +
   geom_line() +
   geom_vline(xintercept = c(phase_2_start, phase_3_start), col=c("dodgerblue2", "red"), linetype = "dashed")+
   labs(
@@ -100,10 +120,10 @@ ggplot(tno_combined_queue, aes(dates, queue_size)) +
 
 
 # Target queue size for current capacity
-current_target_queue <- calc_target_queue_size(demand, 52, factor = 4)
+current_target_queue <- calc_target_queue_size(demand_phase2, 52, factor = 6)
 
 # Future target queue size
-current_target_capacity <- calc_target_capacity([demand], 52)
+current_target_capacity <- calc_target_capacity(demand_phase2, 52)
 
 
 # How much resource could be freed?
@@ -114,18 +134,23 @@ current_target_capacity <- calc_target_capacity([demand], 52)
 # How long to meet 92% patients < 18 weeks?
 # If we want the average wait to be within a target wait of 18 weeks
 # For approx 2% chance of going over target
-calc_target_mean_wait(52, factor = 4)
-
-# Current target demand
-current_target_capacity <- calc_target_capacity([demand], 52)
+calc_target_mean_wait(52, factor =6)
 
 # Target capacity after difference
-future_target_capacity <- calc_target_capacity([demand after 40% reduction], 52)
+future_target_capacity <- calc_target_capacity(demand_phase3, 52)
   
 # capacity that release once implemented:
   
 current_target_capacity - future_target_capacity
 
 
+#  How long does it take to get to queue < target length
 
 
+
+
+
+to_save <- list(tno_sim1, tno_sim2, tno_sim3)
+lapply(to_save,function(x){saveRDS(x, file = paste0("/data/",x,".RDS"))})
+
+saveRDS(tno_sim3, "./data/tno_sim3.rds")
