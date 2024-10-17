@@ -1,4 +1,4 @@
-# Generate artificial T&O scenario using real data control parameters
+# Generate artificial ENT scenario using real data control parameters
 
 
 # Connect to SQL Server.
@@ -19,12 +19,13 @@ theme_set(
 )
 
 
-demand_phase1 = 422# 300
-demand_phase2 = 432
+# 
+demand_phase1 = 400# 300
+demand_phase2 = 165
 demand_phase3_0 = demand_phase2
 
-capacity_phase1 = 388 # 248
-capacity_phase2 = 451
+capacity_phase1 = 250
+capacity_phase2 = 184
 capacity_phase3_0 = capacity_phase2
 
 demand_phase3_20 = demand_phase2 * 0.8 # 20 percent of demand taken out by CC
@@ -36,8 +37,8 @@ capacity_phase3_40 = capacity_phase2 * 0.6   # 40 percent of demand taken out by
 
 
 
-phase_1_start = as.Date("2020-04-01")
-phase_1_end = as.Date("2023-08-31")
+phase_1_start = as.Date("2022-04-01")
+phase_1_end = as.Date("2022-10-08")
 phase_2_start = phase_1_end + 1 
 phase_2_end = as.Date("2026-11-30")
 phase_3_start = phase_2_end + 1 
@@ -45,20 +46,20 @@ phase_3_end = as.Date("2029-03-31")
 
 # Phase 1:  pre-implementation, setting up the queue.  This may not be real, but should end at peak date
 
-tno_sim1 <-
+ent_sim1 <-
   wl_simulator(phase_1_start, phase_1_end, demand_phase1, capacity_phase1)
 
 
-tno_queue1 <-
-  wl_queue_size(tno_sim1)
+ent_queue1 <-
+  wl_queue_size(ent_sim1)
 
 
 
 
-ggplot(tno_queue1, aes(dates, queue_size)) +
+ggplot(ent_queue1, aes(dates, queue_size)) +
   geom_line() +
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = paste("Phase 1: baseline setting up waiting list \nCapacity = ", capacity_phase1, ", Demand=", demand_phase1),
     y = "Queue Size",
     x = "Month"
@@ -69,19 +70,19 @@ ggplot(tno_queue1, aes(dates, queue_size)) +
 # Nicely guessed to meet peak of 6338 on list at Sept-2023
 # Now we clear as per current rates
 
-tno_sim2 <-
+ent_sim2 <-
   wl_simulator(phase_2_start, phase_2_end, demand_phase2, capacity_phase2
-               , waiting_list = tno_sim1)
+               , waiting_list = ent_sim1)
 
 
-tno_queue2 <-
-  wl_queue_size(tno_sim2)
+ent_queue2 <-
+  wl_queue_size(ent_sim2)
 
 
-ggplot(tno_queue2, aes(dates, queue_size)) +
+ggplot(ent_queue2, aes(dates, queue_size)) +
   geom_line() +
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = paste("Phase 2: Now until implementation \nCapacity = ", capacity_phase2, ", Demand=", demand_phase2),
     y = "Queue Size",
     x = "Month"
@@ -91,42 +92,42 @@ ggplot(tno_queue2, aes(dates, queue_size)) +
 
 
 # Waiting list with 40% off after this date
-tno_sim3_0 <-
+ent_sim3_0 <-
   wl_simulator(phase_3_start, phase_3_end, demand_phase3_0, capacity_phase3_0, 
-                 waiting_list = tno_sim2)
+                 waiting_list = ent_sim2)
 
-tno_sim3_20 <-
+ent_sim3_20 <-
   wl_simulator(phase_3_start, phase_3_end, demand_phase3_20, capacity_phase3_0, 
-               waiting_list = tno_sim2)
+               waiting_list = ent_sim2)
 
-tno_sim3_40 <-
+ent_sim3_40 <-
   wl_simulator(phase_3_start, phase_3_end, demand_phase3_40, capacity_phase3_0, 
-               waiting_list = tno_sim2)
+               waiting_list = ent_sim2)
 
 
-tno_queue3_0 <-
-  wl_queue_size(tno_sim3_0) %>% 
+ent_queue3_0 <-
+  wl_queue_size(ent_sim3_0) %>% 
   mutate(sim = "0% reduction")
 
-tno_queue3_20 <-
-  wl_queue_size(tno_sim3_20) %>% 
+ent_queue3_20 <-
+  wl_queue_size(ent_sim3_20) %>% 
   mutate(sim = "20% reduction")
 
-tno_queue3_40 <-
-  wl_queue_size(tno_sim3_40) %>% 
+ent_queue3_40 <-
+  wl_queue_size(ent_sim3_40) %>% 
   mutate(sim = "40% reduction")
 
 
-tno_queue3_0 %>% 
-  union(tno_queue3_20) %>% 
-  union(tno_queue3_40) %>% 
+ent_queue3_0 %>% 
+  union(ent_queue3_20) %>% 
+  union(ent_queue3_40) %>% 
 
 ggplot(aes(dates, queue_size, linetype = sim)) +
   geom_line() +
-  #geom_line(data = tno_queue3_20, linetype = "dashed") +
-  #geom_line(data = tno_queue3_40, linetype = "dotted") +
+  #geom_line(data = ent_queue3_20, linetype = "dashed") +
+  #geom_line(data = ent_queue3_40, linetype = "dotted") +
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = paste("Phase T3: after implementation: \nCapacity(0) = ", capacity_phase3_0, ", Demand (0)=", demand_phase3_0,
                      "\nCapacity(20) = ", capacity_phase3_20, ", Demand (20)=", demand_phase3_20,
                      "\nCapacity(40) = ", capacity_phase3_40, ", Demand (40)=", demand_phase3_40),
@@ -146,8 +147,8 @@ future_target_queue_40 <- calc_target_queue_size(demand_phase3_40, 18, factor = 
 # 
 
 # Phases 0
-tno_queue3_0 <-
-  tno_queue3_0 %>% 
+ent_queue3_0 <-
+  ent_queue3_0 %>% 
   mutate(phase = case_when(dates <= phase_1_end ~ 1,
                            dates <= phase_2_end ~ 2,
                            dates <= phase_3_end ~ 3,
@@ -157,8 +158,8 @@ tno_queue3_0 <-
          )
 
 # Phases20
-tno_queue3_20 <-
-  tno_queue3_20 %>% 
+ent_queue3_20 <-
+  ent_queue3_20 %>% 
   mutate(phase = case_when(dates <= phase_1_end ~ 1,
                            dates <= phase_2_end ~ 2,
                            dates <= phase_3_end ~ 3,
@@ -169,8 +170,8 @@ tno_queue3_20 <-
 
 
 # Phases
-tno_queue3_40 <-
-  tno_queue3_40 %>% 
+ent_queue3_40 <-
+  ent_queue3_40 %>% 
   mutate(phase = case_when(dates <= phase_1_end ~ 1,
                            dates <= phase_2_end ~ 2,
                            dates <= phase_3_end ~ 3,
@@ -182,10 +183,10 @@ tno_queue3_40 <-
 
 # Join waiting list
 
-#tno_wl2 <- wl_join(tno_sim1, tno_sim2)
-#tno_wl3 <- wl_join(tno_wl2, tno_sim3)
+#ent_wl2 <- wl_join(ent_sim1, ent_sim2)
+#ent_wl3 <- wl_join(ent_wl2, ent_sim3)
 
-wl_stats(tno_sim3)
+wl_stats(ent_sim3)
 
 
 
@@ -219,8 +220,8 @@ weekly_capacity_release_40 <- current_target_capacity - future_target_capacity_4
 
 #  How long does it take to get to queue < target length
 
-# tno_queue3 <-
-#   tno_queue3 %>% 
+# ent_queue3 <-
+#   ent_queue3 %>% 
 
 
 
@@ -228,24 +229,24 @@ weekly_capacity_release_40 <- current_target_capacity - future_target_capacity_4
 
 # Plot with implementation at March 27, then add 20% drop in demand
 
-#tno_combined_queue <- wl_queue_size(tno_wl3)
+#ent_combined_queue <- wl_queue_size(ent_wl3)
   
 phase_2_reach_0 <- 
-  tno_queue3_0 %>% 
+  ent_queue3_0 %>% 
   filter(phase2_target == 1) %>% 
   head(1) %>%
   mutate(sim = "Current") %>% 
   select(dates, queue_size, sim) 
 
 # phase_2_reach_20 <- 
-#   tno_queue3_20 %>% 
+#   ent_queue3_20 %>% 
 #   filter(phase2_target == 1) %>% 
 #   head(1) %>%
 #   mutate(sim = "20% reduction") %>% 
 #   select(dates, queue_size, sim) 
 
 # phase_2_reach_40 <- 
-#   tno_queue3_40 %>% 
+#   ent_queue3_40 %>% 
 #   filter(phase2_target == 1) %>% 
 #   head(1) %>%
 #   mutate(sim = "40% reduction") %>% 
@@ -253,28 +254,28 @@ phase_2_reach_0 <-
 # 
 # 
 phase_3_reach_0 <- 
-  tno_queue3_0 %>% 
+  ent_queue3_0 %>% 
   filter(phase3_target == 1) %>% 
   head(1) %>%  
   mutate(sim = "0% reduction") %>% 
   select(dates, queue_size, sim) 
 
 phase_3_reach_20 <- 
-  tno_queue3_20 %>% 
+  ent_queue3_20 %>% 
   filter(phase3_target == 1) %>% 
   head(1) %>% 
   mutate(sim = "20% reduction") %>% 
   select(dates, queue_size, sim) 
 
 phase_3_reach_40 <- 
-  tno_queue3_40 %>% 
+  ent_queue3_40 %>% 
   filter(phase3_target == 1) %>% 
   head(1) %>%  
   mutate(sim = "40% reduction") %>% 
   select(dates, queue_size, sim) 
 
 
-ggplot(tno_queue3_0, aes(dates, queue_size)) +
+ggplot(ent_queue3_0, aes(dates, queue_size)) +
   geom_line() +
   geom_vline(xintercept = c(phase_2_start, phase_3_start), col=c("dodgerblue2", "red"), linetype = "dashed")+
   #geom_hline(yintercept = current_target_queue, linetype = "dashed")+
@@ -282,14 +283,14 @@ ggplot(tno_queue3_0, aes(dates, queue_size)) +
   geom_point(data=phase_2_reach_0, shape=5, col = "dodgerblue2", size = 5, stroke = 2)+
   geom_point(data=phase_3_reach_0, shape=4, col = "red", size = 5, stroke = 2)+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = "Full modelled period",
     y = "Queue Size",
     x = "Month"
   )+
   scale_y_continuous(labels = comma)
 
-ggplot(tno_queue3_20, aes(dates, queue_size)) +
+ggplot(ent_queue3_20, aes(dates, queue_size)) +
   geom_line() +
   geom_vline(xintercept = c(phase_2_start, phase_3_start), col=c("dodgerblue2", "red"), linetype = "dashed")+
   #geom_hline(yintercept = current_target_queue, linetype = "dashed")+
@@ -297,7 +298,7 @@ ggplot(tno_queue3_20, aes(dates, queue_size)) +
   geom_point(data=phase_2_reach_0, shape=4, col = "dodgerblue2", size = 5, stroke = 2)+
   geom_point(data=phase_3_reach_20, shape=4, col = "red", size = 5, stroke = 2)+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = "Full modelled period",
     y = "Queue Size",
     x = "Month"
@@ -305,7 +306,7 @@ ggplot(tno_queue3_20, aes(dates, queue_size)) +
   scale_y_continuous(labels = comma)
 
 
-ggplot(tno_queue3_40, aes(dates, queue_size)) +
+ggplot(ent_queue3_40, aes(dates, queue_size)) +
   geom_line() +
   geom_vline(xintercept = c(phase_2_start, phase_3_start), col=c("dodgerblue2", "red"), linetype = "dashed")+
   #geom_hline(yintercept = current_target_queue, linetype = "dashed")+
@@ -313,7 +314,7 @@ ggplot(tno_queue3_40, aes(dates, queue_size)) +
   geom_point(data=phase_2_reach_0, shape=4, col = "dodgerblue2", size = 5, stroke = 2)+
   geom_point(data=phase_3_reach_0, shape=4, col = "red", size = 5, stroke = 2)+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = "Full modelled period",
     y = "Queue Size",
     x = "Month"
@@ -323,8 +324,8 @@ ggplot(tno_queue3_40, aes(dates, queue_size)) +
 
 targets <-
   phase_2_reach_0 %>% 
-  union(phase_2_reach_20) %>% 
-  union(phase_2_reach_40) %>% 
+  #union(phase_2_reach_20) %>% 
+  #union(phase_2_reach_40) %>% 
   union(phase_3_reach_0) %>% 
   union(phase_3_reach_20) %>% 
   union(phase_3_reach_40) %>% 
@@ -332,9 +333,9 @@ targets <-
   
 
 
-tno_queue3_0 %>% 
-  union(tno_queue3_20) %>% 
-  union(tno_queue3_40) %>% 
+ent_queue3_0 %>% 
+  union(ent_queue3_20) %>% 
+  union(ent_queue3_40) %>% 
   mutate(sim = ifelse(dates < phase_3_start, "Current", sim)) %>% 
   filter(year(dates)>2023) %>% 
   
@@ -352,38 +353,29 @@ tno_queue3_0 %>%
   #geom_point(data=phase_3_reach_0, shape=4, col = "red", size = 5, stroke = 2)+
 
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = "ENT: First GP referral to first Outpatients waiting list:",
     subtitle = "Crosses represent reaching the target queue size",
     y = "Queue Size",
     x = "Month",
     colour = "Simulation"
   )+
   scale_y_continuous(labels = comma)
-  #geom_line(data = tno_queue3_20, linetype = "dashed") +
-  #geom_line(data = tno_queue3_40, linetype = "dotted") +
+  #geom_line(data = ent_queue3_20, linetype = "dashed") +
+  #geom_line(data = ent_queue3_40, linetype = "dotted") +
 
 
 
-#to_save <- list(tno_sim1, tno_sim2, tno_sim3)
+#to_save <- list(ent_sim1, ent_sim2, ent_sim3)
 #lapply(to_save,function(x){saveRDS(x, file = paste0("/data/",x,".RDS"))})
 
-#saveRDS(tno_sim3_0, "./data/tno_sim3_0.rds")
-#saveRDS(tno_sim3_20, "./data/tno_sim3_20.rds")
-#saveRDS(tno_sim3_40, "./data/tno_sim3_40.rds")
-#saveRDS(tno_sim2, "./data/tno_sim2.rds")
-#saveRDS(tno_sim1, "./data/tno_sim1.rds")
+#saveRDS(ent_sim3_0, "./data/ent_sim3_0.rds")
+#saveRDS(ent_sim3_20, "./data/ent_sim3_20.rds")
+#saveRDS(ent_sim3_40, "./data/ent_sim3_40.rds")
+#saveRDS(ent_sim2, "./data/ent_sim2.rds")
+#saveRDS(ent_sim1, "./data/ent_sim1.rds")
 
-tno_sim1 <- readRDS("./data/tno_sim1.rds")
-tno_sim2 <- readRDS("./data/tno_sim2.rds")
-tno_sim3_0 <- readRDS("./data/tno_sim3_0.rds")
-tno_sim3_20 <- readRDS("./data/tno_sim3_20.rds")
-tno_sim3_40 <- readRDS("./data/tno_sim3_40.rds")
-
-
-
-############################################################################################
-
-# Same thing for UHB and ROH
-
-############################################################################################
-
+ent_sim1 <- readRDS("./data/ent_sim1.rds")
+ent_sim2 <- readRDS("./data/ent_sim2.rds")
+ent_sim3_0 <- readRDS("./data/ent_sim3_0.rds")
+ent_sim3_20 <- readRDS("./data/ent_sim3_20.rds")
+ent_sim3_40 <- readRDS("./data/ent_sim3_40.rds")
