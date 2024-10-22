@@ -223,7 +223,7 @@ mean_wait4 <- calc_target_mean_wait(6, factor = 1)
 mean_wait3 <- calc_target_mean_wait(6, factor = 1)
 
 # Target capacity after difference
-current_target_capacity <- calc_target_capacity(control_periods$Adds[9], 6, factor = 1)
+current_target_capacity <- calc_target_capacity(control_periods$Adds[8], 6, factor = 1)
 future_target_capacity_0 <- calc_target_capacity(control_periods$Adds[19], 6, factor = 1)
 future_target_capacity_20 <- calc_target_capacity(control_periods$Adds_20[19], 6, factor = 1)
 future_target_capacity_40 <- calc_target_capacity(control_periods$Adds_40[19], 6, factor = 1)
