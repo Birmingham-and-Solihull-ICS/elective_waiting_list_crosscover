@@ -190,7 +190,7 @@ r_with_popn_growth <-
                )
                , expand = c(0,0))+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = bquote(bold("Model 1:") ~ "First GP referral to first Outpatients waiting list:"),
     subtitle = "Dotted line represents target queue size \n
     Green = current demand projected forward, Orange = 20% demand reduced due to CC, Purple = 40% demand reduced due to CC",
     y = "Queue Size",

@@ -1,7 +1,12 @@
 #Generate artificial T&O scenario using real data control parameters
-
+library(BSOLTheme)
 library(tidyverse)
 library(NHSRwaitinglist)
+library(scales)
+library(extrafont)
+library(ggtext)
+library()
+
 
 # set ggplot theme
 theme_set(
@@ -17,8 +22,9 @@ colours <- RColorBrewer::brewer.pal(n = 3, name="Dark2")
 # programme timepoints
 programme_dts<- 
   data.frame(
-    dates = as.Date(c('01/01/2027', '01/07/2027'), '%d/%m/%Y'),
-    descr = c("Implementation", "Full Benefits")
+    startdate = as.Date(c('01/07/2026', '01/01/2027', "02/01/2027"), '%d/%m/%Y'),
+    enddate = as.Date(c('31/12/2026', '01/01/2027', "31/03/2029"), '%d/%m/%Y'),
+    descr = c("T2", "T3", "T4")
   )
 
 
@@ -27,28 +33,48 @@ programme_dts<-
 ############## Naive forecast - last point forward #####################################
 
 control_periods <- 
-tibble::tribble(
-        ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
-  "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
-  "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
-  "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
-  "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
-  "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
-  "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
-  "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
-  "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
-  "01/10/2024", "31/03/2026",      9L,     NA,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
-  "01/04/2025", "31/03/2026",     10L,     NA,  460L,     495L,         0.93,     460L,        495L,     460L,        495L,
-  "01/04/2026", "31/12/2027",     11L,     NA,  465L,     495L,         0.94,     465L,        495L,     465L,        495L,
-  "01/01/2027", "31/01/2027",     12L,     NA,  469L,     495L,         0.95,     454L,        495L,     438L,        495L,
-  "01/02/2027", "28/02/2027",     13L,     NA,  469L,     495L,         0.95,     438L,        495L,     407L,        495L,
-  "01/03/2027", "31/03/2027",     14L,     NA,  469L,     495L,         0.95,     423L,        495L,     376L,        495L,
-  "01/04/2027", "30/04/2027",     15L,     NA,  469L,     495L,         0.95,     407L,        495L,     344L,        495L,
-  "01/05/2027", "31/05/2027",     16L,     NA,  469L,     495L,         0.95,     391L,        495L,     313L,        495L,
-  "01/06/2027", "30/06/2027",     17L,     NA,  469L,     495L,         0.95,     376L,        495L,     282L,        495L,
-  "01/07/2027", "31/03/2028",     18L,     NA,  474L,     495L,         0.96,     379L,        495L,     284L,        495L,
-  "01/04/2028", "31/03/2029",     19L,     NA,  479L,     495L,         0.97,     383L,        495L,     287L,        495L
+  tibble::tribble(
+          ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
+    "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
+    "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
+    "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
+    "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
+    "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
+    "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
+    "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
+    "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
+    "01/10/2024", "31/03/2025",      9L,     NA,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
+    "01/04/2025", "31/03/2026",     10L,     NA,  460L,     495L,         0.93,     460L,        495L,     460L,        495L,
+    "01/04/2026", "30/06/2026",     11L,     NA,  465L,     495L,         0.94,     465L,        495L,     465L,        495L,
+    "01/07/2026", "30/09/2026",     12L,     NA,  465L,     495L,         0.94,     456L,        495L,     446L,        495L,
+    "01/10/2026", "31/12/2026",     13L,     NA,  465L,     495L,         0.94,     446L,        495L,     428L,        495L,
+    "01/01/2027", "31/03/2027",     14L,     NA,  465L,     495L,         0.94,     372L,        495L,     279L,        495L,
+    "01/04/2027", "31/03/2028",     15L,     NA,  469L,     495L,         0.95,     376L,        495L,     282L,        495L,
+    "01/04/2028", "31/03/2029",     16L,     NA,  474L,     495L,         0.96,     379L,        495L,     284L,        495L
+    )
+
+
+
+
+control_periodsa <- 
+  tibble::tribble(
+    ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, 
+    "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         
+    "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         
+    "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         
+    "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         
+    "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         
+    "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         
+    "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         
+    "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         
+    "01/10/2024", "31/03/2026",      9L,     NA,  456L,     495L,         
+    "01/04/2025", "31/03/2026",     10L,     NA,  460L,     495L,         
+    "01/04/2026", "31/12/2026",     11L,     NA,  465L,     495L,         
+    "01/01/2027", "30/06/2027",     12L,     NA,  469L,     495L,         
+    "01/07/2027", "31/03/2028",     13L,     NA,  474L,     495L,         
+    "01/04/2028", "31/03/2029",     14L,     NA,  479L,     495L,         
   )
+
 
 
 
@@ -60,6 +86,8 @@ tibble::tribble(
 
 control_periods$Start <- as.Date(control_periods$Start, format = "%d/%m/%Y")
 control_periods$end <- as.Date(control_periods$end, format = "%d/%m/%Y")
+control_periodsa$Start <- as.Date(control_periodsa$Start, format = "%d/%m/%Y")
+control_periodsa$end <- as.Date(control_periodsa$end, format = "%d/%m/%Y")
 
 
 
@@ -92,7 +120,8 @@ tno_sim_40_1 <-  tno_sim1
 
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+# altered to smooth out implementation period that doesn't affect the no-change scenario. Now 14 steps, not 19.
+for(i in seq(2,16)){
   set.seed(125)  
   eval(
     call("<-"
@@ -108,7 +137,7 @@ for(i in seq(2,19)){
 }
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)
   eval(
     call("<-"
@@ -124,7 +153,7 @@ for(i in seq(2,19)){
 }
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)
   eval(
     call("<-"
@@ -144,22 +173,22 @@ for(i in seq(2,19)){
 # tno_sim1 <-
 #   wl_simulator(phase_1_start, phase_1_end, demand_phase1, capacity_phase1)
 
-tno_queue19 <-
-  wl_queue_size(tno_sim19 )
+tno_queue16 <-
+  wl_queue_size(tno_sim16)
 
-tno_queue_20_19 <-
-  wl_queue_size(tno_sim_20_19)
+tno_queue_20_16 <-
+  wl_queue_size(tno_sim_20_16)
 
-tno_queue_40_19 <-
-  wl_queue_size(tno_sim_40_19)
+tno_queue_40_16 <-
+  wl_queue_size(tno_sim_40_16)
 
-ggplot(tno_queue19, aes(dates, queue_size)) +
+ggplot(tno_queue16, aes(dates, queue_size)) +
   
-  geom_line(col=colours[2], data=tno_queue_20_19) +
-  geom_line(col=colours[3], data=tno_queue_40_19) +
+  geom_line(col=colours[2], data=tno_queue_20_16) +
+  geom_line(col=colours[3], data=tno_queue_40_16) +
   geom_line(col=colours[1]) +
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list:",
+    title = bquote(bold("T&O:") ~ "First GP referral to first Outpatients waiting list:"),
     #subtitle = paste("Phase 1: baseline setting up waiting list \nCapacity = ", capacity_phase1, ", Demand=", demand_phase1),
     y = "Queue Size",
     x = "Month"
@@ -169,13 +198,16 @@ ggplot(tno_queue19, aes(dates, queue_size)) +
 
 # Target queue size for current and future queue
 control_periods$target_queue_size <- calc_target_queue_size(control_periods$Adds, 6, factor = 1)
+#control_periodsa$target_queue_size <- calc_target_queue_size(control_periodsa$Adds, 6, factor = 1)
 control_periods$target_queue_size_20 <- calc_target_queue_size(control_periods$Adds_20, 6, factor = 1)
 control_periods$target_queue_size_40 <- calc_target_queue_size(control_periods$Adds_40, 6, factor = 1)
 
 control_periods$wl_load <- calc_queue_load(control_periods$Adds, control_periods$Removes)
+#control_periodsa$wl_load <- calc_queue_load(control_periodsa$Adds, control_periodsa$Removes)
 control_periods$wl_load_20 <- calc_queue_load(control_periods$Adds_20, control_periods$Removes)
 control_periods$wl_load_40 <- calc_queue_load(control_periods$Adds_40, control_periods$Removes)
 
+#target_queue_size <- calc_target_queue_size(tail(control_periods,1)$Adds, 6, factor = 1)
 target_queue_size <- calc_target_queue_size(tail(control_periods,1)$Adds, 6, factor = 1)
 target_queue_size_20 <- calc_target_queue_size(tail(control_periods,1)$Adds_20, 6, factor = 1)
 target_queue_size_40 <- calc_target_queue_size(tail(control_periods,1)$Adds_40, 6, factor = 1)
@@ -195,9 +227,10 @@ mean_wait3 <- calc_target_mean_wait(6, factor = 1)
 
 # Target capacity after difference
 current_target_capacity <- calc_target_capacity(control_periods$Adds[8], 6, factor = 1)
-future_target_capacity_0 <- calc_target_capacity(control_periods$Adds[19], 6, factor = 1)
-future_target_capacity_20 <- calc_target_capacity(control_periods$Adds_20[19], 6, factor = 1)
-future_target_capacity_40 <- calc_target_capacity(control_periods$Adds_40[19], 6, factor = 1)
+#future_target_capacity_0 <- calc_target_capacity(control_periods$Adds[19], 6, factor = 1)
+future_target_capacity_0 <- calc_target_capacity(control_periods$Adds[16], 6, factor = 1)
+future_target_capacity_20 <- calc_target_capacity(control_periods$Adds_20[16], 6, factor = 1)
+future_target_capacity_40 <- calc_target_capacity(control_periods$Adds_40[16], 6, factor = 1)
 
 # capacity that release once implemented:
 
@@ -205,44 +238,75 @@ weekly_capacity_release_0 <- current_target_capacity - future_target_capacity_0
 weekly_capacity_release_20 <- current_target_capacity - future_target_capacity_20
 weekly_capacity_release_40 <- current_target_capacity - future_target_capacity_40
 
+# what is queue at T3
+t3_queue_size_0 <- tno_queue16 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_20_0 <- tno_queue_20_16 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_40_0 <- tno_queue_40_16 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+
+# Difference from T3 to target
+t3_queue_size_0 - target_queue_size
+t3_queue_size_20_0 - target_queue_size_20
+t3_queue_size_40_0 - target_queue_size_40
+
+# How long after T3 to target
+## Relief capacity at T3 - amount capacity over demand at T3
+# 0
+control_periods[14,]$Removes - control_periods[14,]$Adds
+# How long till target in weeks
+(t3_queue_size_0 - target_queue_size) / (control_periods[14,]$Removes - control_periods[14,]$Adds)
+
+# 20
+control_periods[14,]$Removes_20 - control_periods[14,]$Adds_20
+# How long till target in weeks
+(t3_queue_size_20_0 - target_queue_size_20) / (control_periods[14,]$Removes_20 - control_periods[14,]$Adds_20)
+
+#40
+control_periods[14,]$Removes_40 - control_periods[14,]$Adds_40
+# How long till target in weeks
+(t3_queue_size_40_0 - target_queue_size_40) / (control_periods[14,]$Removes_40 - control_periods[14,]$Adds_40)
 
 
+difftime(target_date$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_20_date$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_40_date$dates, programme_dts$startdate[2], units = "weeks")
 
 # Phases 0
-tno_queue19 <-
-  tno_queue19 %>% 
+tno_queue16 <-
+  tno_queue16 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_0 = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 # Phases 0
-tno_queue_20_19 <-
-  tno_queue_20_19 %>% 
+tno_queue_20_16 <-
+  tno_queue_20_16 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_20 = ifelse((queue_size <= target_queue_size_20) & (dates > as.Date('2023-01-01')), 1,0)
   )
 # Phases 0
-tno_queue_40_19 <-
-  tno_queue_40_19 %>% 
+tno_queue_40_16 <-
+  tno_queue_40_16 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_40 = ifelse((queue_size <= target_queue_size_40) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 
 # Meeting target on it's own
-tno_queue19 %>% 
+tno_queue16 %>% 
   filter(meet_target == 1) %>% 
   slice_head()
 
 # Meeting target in future without intervention
 target_date <-
-  tno_queue19 %>% 
+  tno_queue16 %>% 
   filter(meet_future_0 == 1) %>% 
   slice_head()
+
 target_date
+
 # Meeting target in future (20% reduction)
 target_20_date <-
-  tno_queue_20_19 %>% 
+  tno_queue_20_16 %>% 
   filter(meet_future_20 == 1) %>% 
   slice_head()
 
@@ -250,26 +314,32 @@ target_20_date
 
 # Meeting target in future (40% reduction)
 target_40_date <-
-  tno_queue_40_19 %>% 
+  tno_queue_40_16 %>% 
   filter(meet_future_40 == 1) %>% 
   slice_head()
 
 target_40_date
 
-calc_target_capacity(control_periods$Adds[19], target_wait = 6, factor = 1)
-calc_target_capacity(control_periods$Adds_20[19], target_wait = 6, factor = 1)
-calc_target_capacity(control_periods$Adds_40[19], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods$Adds[16], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods$Adds_20[16], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods$Adds_40[16], target_wait = 6, factor = 1)
 
 ######
 # Plot
 
 with_popn_growth <-
-  ggplot(tno_queue19, aes(dates, queue_size)) +
-  geom_rect(xmin = programme_dts$dates[1], xmax=programme_dts$dates[2], ymin=0, ymax=Inf, alpha=0.02
-            , fill="khaki2")+
+  ggplot(tno_queue16, aes(dates, queue_size)) +
   
-  geom_line(col=colours[2], data=tno_queue_20_19) +
-  geom_line(col=colours[3], data=tno_queue_40_19) +
+  geom_vline(xintercept = programme_dts$startdate[2], alpha=0.4
+           , colour="red")+
+  
+  annotate("rect", xmin = programme_dts$startdate[1], xmax=programme_dts$enddate[1], ymin=0, ymax=Inf, alpha=0.5
+           , fill="khaki1")+
+  annotate("rect", xmin = programme_dts$startdate[3], xmax=programme_dts$enddate[3], ymin=0, ymax=Inf, alpha=0.2
+           , fill="seagreen")+
+  
+  geom_line(col=colours[2], data=tno_queue_20_16) +
+  geom_line(col=colours[3], data=tno_queue_40_16) +
   geom_line(col=colours[1]) +
   
   geom_hline(yintercept = target_queue_size, col=colours[1], linetype="dashed")+
@@ -283,16 +353,34 @@ with_popn_growth <-
   geom_point(data=target_40_date, shape=4, col = colours[3], size = 5, stroke = 2)+
   
   #geom_vline(data = programme_dts, aes(xintercept = dates), col="red", linetype="dashed")+
-  geom_text(x = as.Date("01-04-2027", format = "%d-%m-%Y")
-            , label="T3 - T4"
-            , y=4800
+  geom_text(x = as.Date("01-10-2026", format = "%d-%m-%Y")
+            , label="T2"
+            , y=8000
             , col="black"
-            , size=3
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
+  geom_text(x = as.Date("01-01-2027", format = "%d-%m-%Y")
+            , label="T3"
+            , y=8000
+            , col="black"
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
+  
+  geom_text(x = as.Date("01-04-2028", format = "%d-%m-%Y")
+            , label="T4"
+            , y=8000
+            , col="black"
+            , size=4
             , family = "sans"
             #          , fontface = "bold"
   )+
   
   
+  scale_y_continuous(labels=comma)+
   scale_x_date(date_breaks = "3 month"
                , date_labels = "%b-%y"
                , limits = c(
@@ -302,13 +390,17 @@ with_popn_growth <-
                )
                , expand = c(0,0))+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list (capacity maintained at last data point):",
-    subtitle = "Dotted line represents target queue size \n
-    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced",
+    title = bquote(bold("Model 1: ") ~"T&O - First GP referral to first Outpatients waiting list (capacity maintained as at last data point):"),
+    subtitle = "    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced.
+    Dotted line represents target queue size",
     y = "Queue Size",
     x = "Month"
   )+
-  theme(axis.text.x = element_text(angle=90))
+  theme(axis.text.x = element_text(angle=90)
+        #,plot.subtitle = element_text(face = "plain")
+        ,plot.margin = margin(2,4,2,2, "mm") 
+        )
+
 
 with_popn_growth
 
@@ -318,32 +410,46 @@ with_popn_growth
 
 
 control_periods_2 <-
-tibble::tribble(
-        ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
-  "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
-  "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
-  "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
-  "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
-  "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
-  "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
-  "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
-  "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
-  "01/10/2024", "31/03/2026",      9L,     NA,  456L,     465L,         0.98,     456L,        465L,     456L,        465L,
-  "01/04/2025", "31/03/2026",     10L,     NA,  460L,     470L,         0.98,     460L,        470L,     460L,        470L,
-  "01/04/2026", "31/12/2027",     11L,     NA,  465L,     474L,         0.98,     465L,        474L,     465L,        474L,
-  "01/01/2027", "31/01/2027",     12L,     NA,  469L,     479L,         0.98,     454L,        463L,     438L,        447L,
-  "01/02/2027", "28/02/2027",     13L,     NA,  469L,     479L,         0.98,     438L,        447L,     407L,        415L,
-  "01/03/2027", "31/03/2027",     14L,     NA,  469L,     479L,         0.98,     423L,        431L,     376L,        383L,
-  "01/04/2027", "30/04/2027",     15L,     NA,  456L,     465L,         0.98,     395L,        403L,     334L,        341L,
-  "01/05/2027", "31/05/2027",     16L,     NA,  469L,     479L,         0.98,     391L,        399L,     313L,        319L,
-  "01/06/2027", "30/06/2027",     17L,     NA,  469L,     479L,         0.98,     376L,        383L,     282L,        287L,
-  "01/07/2027", "31/03/2028",     18L,     NA,  474L,     484L,         0.98,     379L,        387L,     284L,        290L,
-  "01/04/2028", "31/03/2029",     19L,     NA,  479L,     488L,         0.98,     383L,        391L,     287L,        293L
-  )
-
-
+  tibble::tribble(
+          ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
+    "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
+    "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
+    "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
+    "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
+    "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
+    "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
+    "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
+    "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
+    "01/10/2024", "31/03/2025",      9L,     NA,  456L,     465L,         0.98,     456L,        465L,     456L,        465L,
+    "01/04/2025", "31/03/2026",     10L,     NA,  460L,     470L,         0.98,     460L,        465L,     460L,        465L,
+    "01/04/2026", "30/06/2026",     11L,     NA,  465L,     474L,         0.98,     465L,        465L,     465L,        465L,
+    "01/07/2026", "30/09/2026",     12L,     NA,  465L,     474L,         0.98,     456L,        465L,     446L,        465L,
+    "01/10/2026", "31/12/2026",     13L,     NA,  465L,     474L,         0.98,     446L,        465L,     428L,        465L,
+    "01/01/2027", "31/03/2027",     14L,     NA,  465L,     474L,         0.98,     372L,        465L,     279L,        465L,
+    "01/04/2027", "31/03/2028",     15L,     NA,  469L,     479L,         0.98,     376L,        465L,     282L,        465L,
+    "01/04/2028", "31/03/2029",     16L,     NA,  474L,     484L,         0.98,     379L,        465L,     284L,        465L
+    )
 
   
+
+control_periods_2a <-
+  tibble::tribble(
+    ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes,
+    "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         
+    "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         
+    "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         
+    "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         
+    "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         
+    "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         
+    "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         
+    "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         
+    "01/10/2024", "31/03/2026",      9L,     NA,  456L,     465L,         
+    "01/04/2025", "31/03/2026",     10L,     NA,  460L,     470L,         
+    "01/04/2026", "31/12/2026",     11L,     NA,  465L,     474L,         
+    "01/01/2027", "30/06/2027",     12L,     NA,  469L,     479L,         
+    "01/07/2027", "31/03/2028",     13L,     NA,  474L,     484L,         
+    "01/04/2028", "31/03/2029",     14L,     NA,  479L,     488L,         
+  )
 
 # When system comes in December 27, T3
 # When system comes full 18-month later, T4
@@ -351,6 +457,9 @@ tibble::tribble(
 
 control_periods_2$Start <- as.Date(control_periods_2$Start, format = "%d/%m/%Y")
 control_periods_2$end <- as.Date(control_periods_2$end, format = "%d/%m/%Y")
+control_periods_2a$Start <- as.Date(control_periods_2a$Start, format = "%d/%m/%Y")
+control_periods_2a$end <- as.Date(control_periods_2a$end, format = "%d/%m/%Y")
+
 
 
 
@@ -383,7 +492,7 @@ tno_sim_40_1_2 <-  tno_sim1_2
 
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)  
   eval(
     call("<-"
@@ -399,7 +508,7 @@ for(i in seq(2,19)){
 }
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)  
   eval(
     call("<-"
@@ -415,7 +524,7 @@ for(i in seq(2,19)){
   
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)
   eval(
     call("<-"
@@ -435,19 +544,19 @@ for(i in seq(2,19)){
 # tno_sim1 <-
 #   wl_simulator(phase_1_start, phase_1_end, demand_phase1, capacity_phase1)
 
-tno_queue19_2 <-
-  wl_queue_size(tno_sim19_2 )
+tno_queue16_2 <-
+  wl_queue_size(tno_sim16_2) #14 mapped to 19 to avoid breaking the rest of the script, but 14 now, form the 'a' table to match changes
 
-tno_queue_20_19_2 <-
-  wl_queue_size(tno_sim_20_19_2)
+tno_queue_20_16_2 <-
+  wl_queue_size(tno_sim_20_16_2)
 
-tno_queue_40_19_2 <-
-  wl_queue_size(tno_sim_40_19_2)
+tno_queue_40_16_2 <-
+  wl_queue_size(tno_sim_40_16_2)
 
-ggplot(tno_queue19_2, aes(dates, queue_size)) +
+ggplot(tno_queue16_2, aes(dates, queue_size)) +
   
-  geom_line(col=colours[2], data=tno_queue_20_19_2) +
-  geom_line(col=colours[3], data=tno_queue_40_19_2) +
+  geom_line(col=colours[2], data=tno_queue_20_16_2) +
+  geom_line(col=colours[3], data=tno_queue_40_16_2) +
   geom_line(col=colours[1]) +
   labs(
     title = "T&O: First GP referral to first Outpatients waiting list:",
@@ -460,14 +569,17 @@ ggplot(tno_queue19_2, aes(dates, queue_size)) +
 
 # Target queue size for current and future queue
 control_periods_2$target_queue_size <- calc_target_queue_size(control_periods_2$Adds, 6, factor = 1)
+#control_periods_2a$target_queue_size <- calc_target_queue_size(control_periods_2a$Adds, 6, factor = 1)
 control_periods_2$target_queue_size_20 <- calc_target_queue_size(control_periods_2$Adds_20, 6, factor = 1)
 control_periods_2$target_queue_size_40 <- calc_target_queue_size(control_periods_2$Adds_40, 6, factor = 1)
 
 control_periods_2$wl_load <- calc_queue_load(control_periods_2$Adds, control_periods_2$Removes)
+#control_periods_2a$wl_load <- calc_queue_load(control_periods_2a$Adds, control_periods_2a$Removes)
 control_periods_2$wl_load_20 <- calc_queue_load(control_periods_2$Adds_20, control_periods_2$Removes)
 control_periods_2$wl_load_40 <- calc_queue_load(control_periods_2$Adds_40, control_periods_2$Removes)
 
 target_queue_size_2 <- calc_target_queue_size(tail(control_periods_2,1)$Adds, 6, factor = 1)
+#target_queue_size_2 <- calc_target_queue_size(tail(control_periods_2a,1)$Adds, 6, factor = 1)
 target_queue_size_20_2 <- calc_target_queue_size(tail(control_periods_2,1)$Adds_20, 6, factor = 1)
 target_queue_size_40_2 <- calc_target_queue_size(tail(control_periods_2,1)$Adds_40, 6, factor = 1)
 
@@ -486,9 +598,9 @@ mean_wait3 <- calc_target_mean_wait(6, factor = 1)
 
 # Target capacity after difference
 current_target_capacity_2 <- calc_target_capacity(control_periods_2$Adds[8], 6, factor = 1)
-future_target_capacity_0_2 <- calc_target_capacity(control_periods_2$Adds[19], 6, factor = 1)
-future_target_capacity_20_2 <- calc_target_capacity(control_periods_2$Adds_20[19], 6, factor = 1)
-future_target_capacity_40_2 <- calc_target_capacity(control_periods_2$Adds_40[19], 6, factor = 1)
+future_target_capacity_0_2 <- calc_target_capacity(control_periods_2$Adds[16], 6, factor = 1)
+future_target_capacity_20_2 <- calc_target_capacity(control_periods_2$Adds_20[16], 6, factor = 1)
+future_target_capacity_40_2 <- calc_target_capacity(control_periods_2$Adds_40[16], 6, factor = 1)
 
 # capacity that release once implemented:
 
@@ -496,45 +608,75 @@ weekly_capacity_release_0_2 <- current_target_capacity_2 - future_target_capacit
 weekly_capacity_release_20_2 <- current_target_capacity_2 - future_target_capacity_20_2
 weekly_capacity_release_40_2 <- current_target_capacity_2 - future_target_capacity_40_2
 
+# what is queue at T3
+t3_queue_size_2 <- tno_queue16_2 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_20_2 <- tno_queue_20_16_2 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_40_2 <- tno_queue_40_16_2 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
 
+# Difference from T3 to target
+t3_queue_size_2 - target_queue_size_2
+t3_queue_size_20_2 - target_queue_size_20_2
+t3_queue_size_40_2 - target_queue_size_40_2
+
+# How long after T3 to target
+## Relief capacity at T3 - amount capacity over demand at T3
+# 0
+control_periods_2[14,]$Removes - control_periods_2[14,]$Adds
+# How long till target in weeks
+(t3_queue_size_2 - target_queue_size_2) / (control_periods_2[14,]$Removes - control_periods_2[14,]$Adds)
+
+# 20
+control_periods_2[14,]$Removes_20 - control_periods_2[14,]$Adds_20
+# How long till target in weeks
+(t3_queue_size_20_2 - target_queue_size_20_2) / (control_periods_2[14,]$Removes_20 - control_periods_2[14,]$Adds_20)
+
+#40
+control_periods_2[14,]$Removes_40 - control_periods_2[14,]$Adds_40
+# How long till target in weeks
+(t3_queue_size_40_2 - target_queue_size_40_2) / (control_periods_2[14,]$Removes_40 - control_periods_2[14,]$Adds_40)
+
+
+difftime(target_date_2$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_20_date_2$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_40_date_2$dates, programme_dts$startdate[2], units = "weeks")
 
 
 # Phases 0
-tno_queue19_2 <-
-  tno_queue19_2 %>% 
+tno_queue16_2 <-
+  tno_queue16_2 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_0 = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 # Phases 0
-tno_queue_20_19_2 <-
-  tno_queue_20_19_2 %>% 
+tno_queue_20_16_2 <-
+  tno_queue_20_16_2 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_20 = ifelse((queue_size <= target_queue_size_20) & (dates > as.Date('2023-01-01')), 1,0)
   )
 # Phases 0
-tno_queue_40_19_2 <-
-  tno_queue_40_19_2 %>% 
+tno_queue_40_16_2 <-
+  tno_queue_40_16_2 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_40 = ifelse((queue_size <= target_queue_size_40) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 
 # Meeting target on it's own
-tno_queue19_2 %>% 
+tno_queue16_2 %>% 
   filter(meet_target == 1) %>% 
   slice_head()
 
 # Meeting target in future without intervention
 target_date_2 <-
-  tno_queue19_2 %>% 
+  tno_queue16_2 %>% 
   filter(meet_future_0 == 1) %>% 
   slice_head()
 
 target_date_2
 # Meeting target in future (20% reduction)
 target_20_date_2 <-
-  tno_queue_20_19_2 %>% 
+  tno_queue_20_16_2 %>% 
   filter(meet_future_20 == 1) %>% 
   slice_head()
 
@@ -542,26 +684,36 @@ target_20_date_2
 
 # Meeting target in future (40% reduction)
 target_40_date_2 <-
-  tno_queue_40_19_2 %>% 
+  tno_queue_40_16_2 %>% 
   filter(meet_future_40 == 1) %>% 
   slice_head()
 
 target_40_date_2
 
 calc_target_capacity(control_periods_2$Adds[19], target_wait = 6, factor = 1)
+#calc_target_capacity(control_periods_2a$Adds[14], target_wait = 6, factor = 1)
 calc_target_capacity(control_periods_2$Adds_20[19], target_wait = 6, factor = 1)
 calc_target_capacity(control_periods_2$Adds_40[19], target_wait = 6, factor = 1)
 
 ######
 # Plot
+#colours <- RColorBrewer::brewer.pal(n = 3, name="Dark2")
 
 with_popn_growth_2 <-
-  ggplot(tno_queue19_2, aes(dates, queue_size)) +
-  geom_rect(xmin = programme_dts$dates[1], xmax=programme_dts$dates[2], ymin=0, ymax=Inf, alpha=0.02
-            , fill="khaki2")+
+  ggplot(tno_queue16_2, aes(dates, queue_size)) +
+  #geom_rect(xmin = programme_dts$dates[1], xmax=programme_dts$dates[2], ymin=0, ymax=Inf, alpha=0.05
+  #          , fill="khaki1")+
   
-  geom_line(col=colours[2], data=tno_queue_20_19_2) +
-  geom_line(col=colours[3], data=tno_queue_40_19_2) +
+  geom_vline(xintercept = programme_dts$startdate[2], alpha=0.4
+             , colour="red")+
+  
+  annotate("rect", xmin = programme_dts$startdate[1], xmax=programme_dts$enddate[1], ymin=0, ymax=Inf, alpha=0.5
+           , fill="khaki1")+
+  annotate("rect", xmin = programme_dts$startdate[3], xmax=programme_dts$enddate[3], ymin=0, ymax=Inf, alpha=0.2
+           , fill="seagreen")+
+  
+  geom_line(col=colours[2], data=tno_queue_20_16_2) +
+  geom_line(col=colours[3], data=tno_queue_40_16_2) +
   geom_line(col=colours[1]) +
   
   geom_hline(yintercept = target_queue_size_2, col=colours[1], linetype="dashed")+
@@ -575,16 +727,33 @@ with_popn_growth_2 <-
   geom_point(data=target_40_date_2, shape=4, col = colours[3], size = 5, stroke = 2)+
   
   #geom_vline(data = programme_dts, aes(xintercept = dates), col="red", linetype="dashed")+
-  geom_text(x = as.Date("01-04-2027", format = "%d-%m-%Y")
-            , label="T3 - T4"
-            , y=4800
+  geom_text(x = as.Date("01-10-2026", format = "%d-%m-%Y")
+            , label="T2"
+            , y=8000
             , col="black"
-            , size=3
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
+  geom_text(x = as.Date("01-01-2027", format = "%d-%m-%Y")
+            , label="T3"
+            , y=8000
+            , col="black"
+            , size=4
             , family = "sans"
             #          , fontface = "bold"
   )+
   
+  geom_text(x = as.Date("01-04-2028", format = "%d-%m-%Y")
+            , label="T4"
+            , y=8000
+            , col="black"
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
   
+  scale_y_continuous(labels=comma)+
   scale_x_date(date_breaks = "3 month"
                , date_labels = "%b-%y"
                , limits = c(
@@ -594,9 +763,9 @@ with_popn_growth_2 <-
                )
                , expand = c(0,0))+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list (2% relief capacity maintained):",
-    subtitle = "Dotted line represents target queue size \n
-    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced",
+    title = bquote(bold("Model 2: ")  ~"T&O - First GP referral to first Outpatients waiting list (2% relief capacity maintained):"),
+    subtitle = "    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced
+    Dotted line represents target queue size",
     y = "Queue Size",
     x = "Month"
   )+
@@ -609,27 +778,46 @@ with_popn_growth_2
 
 
 control_periods_5 <- 
-tibble::tribble(
-        ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
-  "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
-  "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
-  "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
-  "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
-  "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
-  "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
-  "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
-  "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
-  "01/10/2024", "31/03/2026",      9L,     NA,  456L,     480L,         0.95,     456L,        480L,     456L,        480L,
-  "01/04/2025", "31/03/2026",     10L,     NA,  460L,     485L,         0.95,     460L,        485L,     460L,        485L,
-  "01/04/2026", "31/12/2027",     11L,     NA,  465L,     489L,         0.95,     465L,        489L,     465L,        489L,
-  "01/01/2027", "31/01/2027",     12L,     NA,  469L,     494L,         0.95,     454L,        478L,     438L,        461L,
-  "01/02/2027", "28/02/2027",     13L,     NA,  469L,     494L,         0.95,     438L,        461L,     407L,        428L,
-  "01/03/2027", "31/03/2027",     14L,     NA,  469L,     494L,         0.95,     423L,        445L,     376L,        395L,
-  "01/04/2027", "30/04/2027",     15L,     NA,  469L,     494L,         0.95,     407L,        428L,     344L,        362L,
-  "01/05/2027", "31/05/2027",     16L,     NA,  469L,     494L,         0.95,     391L,        412L,     313L,        329L,
-  "01/06/2027", "30/06/2027",     17L,     NA,  469L,     494L,         0.95,     376L,        395L,     282L,        297L,
-  "01/07/2027", "31/03/2028",     18L,     NA,  474L,     499L,         0.95,     379L,        399L,     284L,        299L,
-  "01/04/2028", "31/03/2029",     19L,     NA,  479L,     504L,         0.95,     383L,        403L,     287L,        302L
+ tibble::tribble(
+         ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes, ~WL_pressure, ~Adds_20, ~Removes_20, ~Adds_40, ~Removes_40,
+   "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         2.64,    1254L,        475L,    1254L,        475L,
+   "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         0.92,     441L,        479L,     441L,        479L,
+   "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         0.98,     506L,        516L,     506L,        516L,
+   "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         0.95,     465L,        490L,     465L,        490L,
+   "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         0.81,     418L,        519L,     418L,        519L,
+   "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         0.83,     399L,        481L,     399L,        481L,
+   "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         0.93,     415L,        446L,     415L,        446L,
+   "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         0.92,     456L,        495L,     456L,        495L,
+   "01/10/2024", "31/03/2025",      9L,     NA,  456L,     479L,         0.95,     456L,        479L,     456L,        479L,
+   "01/04/2025", "31/03/2026",     10L,     NA,  460L,     483L,         0.95,     460L,        479L,     460L,        479L,
+   "01/04/2026", "30/06/2026",     11L,     NA,  465L,     488L,         0.95,     465L,        479L,     465L,        479L,
+   "01/07/2026", "30/09/2026",     12L,     NA,  465L,     488L,         0.95,     456L,        479L,     446L,        479L,
+   "01/10/2026", "31/12/2026",     13L,     NA,  465L,     488L,         0.95,     446L,        479L,     428L,        479L,
+   "01/01/2027", "31/03/2027",     14L,     NA,  465L,     488L,         0.95,     372L,        479L,     279L,        479L,
+   "01/04/2027", "31/03/2028",     15L,     NA,  469L,     493L,         0.95,     376L,        479L,     282L,        479L,
+   "01/04/2028", "31/03/2029",     16L,     NA,  474L,     498L,         0.95,     379L,        479L,     284L,        479L
+   )
+
+
+#Added to uneccesary monthly period out of control group.
+
+control_periods_5a <- 
+  tibble::tribble(
+    ~Start,         ~end, ~Period,    ~WL, ~Adds, ~Removes,
+    "01/10/2022", "31/12/2022",      1L, 10024L, 1254L,     475L,         
+    "01/01/2023", "31/03/2023",      2L,  9323L,  441L,     479L,         
+    "01/04/2023", "30/06/2023",      3L,  9205L,  506L,     516L,         
+    "01/07/2023", "30/09/2023",      4L,  8803L,  465L,     490L,         
+    "01/10/2023", "31/12/2023",      5L,  7942L,  418L,     519L,         
+    "01/01/2024", "31/03/2024",      6L,  6691L,  399L,     481L,         
+    "01/04/2024", "30/06/2024",      7L,  5909L,  415L,     446L,         
+    "01/07/2024", "30/09/2024",      8L,  5707L,  456L,     495L,         
+    "01/10/2024", "31/03/2026",      9L,     NA,  456L,     479L,         
+    "01/04/2025", "31/03/2026",     10L,     NA,  460L,     483L,         
+    "01/04/2026", "31/12/2026",     11L,     NA,  465L,     488L,         
+    "01/01/2027", "30/06/2027",     12L,     NA,  469L,     493L,         
+    "01/07/2027", "31/03/2028",     13L,     NA,  474L,     498L,         
+    "01/04/2028", "31/03/2029",     14L,     NA,  479L,     503L,         
   )
 
 
@@ -641,6 +829,8 @@ tibble::tribble(
 control_periods_5$Start <- as.Date(control_periods_5$Start, format = "%d/%m/%Y")
 control_periods_5$end <- as.Date(control_periods_5$end, format = "%d/%m/%Y")
 
+control_periods_5a$Start <- as.Date(control_periods_5a$Start, format = "%d/%m/%Y")
+control_periods_5a$end <- as.Date(control_periods_5a$end, format = "%d/%m/%Y")
 
 
 # version 1 with 5% referral growth
@@ -672,7 +862,8 @@ tno_sim_40_1_5 <-  tno_sim1_5
 
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+# Use control period 5a here to remove jagged monthly part, as not monthly ramp to the no-effect sceanrio
+for(i in seq(2,16)){
   set.seed(125)  
   eval(
     call("<-"
@@ -688,7 +879,7 @@ for(i in seq(2,19)){
 }
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)  
   eval(
     call("<-"
@@ -704,7 +895,7 @@ for(i in seq(2,19)){
 
 
 # Loop through and simulate each section
-for(i in seq(2,19)){
+for(i in seq(2,16)){
   set.seed(125)
   eval(
     call("<-"
@@ -724,19 +915,19 @@ for(i in seq(2,19)){
 # tno_sim1 <-
 #   wl_simulator(phase_1_start, phase_1_end, demand_phase1, capacity_phase1)
 
-tno_queue19_5 <-
-  wl_queue_size(tno_sim19_5 )
+tno_queue16_5 <-
+  wl_queue_size(tno_sim16_5) # altered to 14 to account for the change to control group
 
-tno_queue_20_19_5 <-
-  wl_queue_size(tno_sim_20_19_5)
+tno_queue_20_16_5 <-
+  wl_queue_size(tno_sim_20_16_5)
 
-tno_queue_40_19_5 <-
-  wl_queue_size(tno_sim_40_19_5)
+tno_queue_40_16_5 <-
+  wl_queue_size(tno_sim_40_16_5)
 
-ggplot(tno_queue19_5, aes(dates, queue_size)) +
+ggplot(tno_queue16_5, aes(dates, queue_size)) +
   
-  geom_line(col=colours[2], data=tno_queue_20_19_5) +
-  geom_line(col=colours[3], data=tno_queue_40_19_5) +
+  geom_line(col=colours[2], data=tno_queue_20_16_5) +
+  geom_line(col=colours[3], data=tno_queue_40_16_5) +
   geom_line(col=colours[1]) +
   labs(
     title = "T&O: First GP referral to first Outpatients waiting list:",
@@ -749,14 +940,17 @@ ggplot(tno_queue19_5, aes(dates, queue_size)) +
 
 # Target queue size for current and future queue
 control_periods_5$target_queue_size_5 <- calc_target_queue_size(control_periods_5$Adds, 6, factor = 1)
+#control_periods_5a$target_queue_size_5 <- calc_target_queue_size(control_periods_5a$Adds, 6, factor = 1)
 control_periods_5$target_queue_size_20_5 <- calc_target_queue_size(control_periods_5$Adds_20, 6, factor = 1)
 control_periods_5$target_queue_size_40_5 <- calc_target_queue_size(control_periods_5$Adds_40, 6, factor = 1)
 
 control_periods_5$wl_load <- calc_queue_load(control_periods_5$Adds, control_periods_5$Removes)
+#control_periods_5a$wl_load <- calc_queue_load(control_periods_5a$Adds, control_periods_5a$Removes)
 control_periods_5$wl_load_20 <- calc_queue_load(control_periods_5$Adds_20, control_periods_5$Removes)
 control_periods_5$wl_load_40 <- calc_queue_load(control_periods_5$Adds_40, control_periods_5$Removes)
 
-target_queue_size_5 <- calc_target_queue_size(tail(control_periods_5,1)$Adds, 6, factor = 1)
+target_queue_size_5 <- calc_target_queue_size(tail(control_periods_5,1)$Adds, 6, factor = 1) 
+#target_queue_size_5 <- calc_target_queue_size(tail(control_periods_5a,1)$Adds, 6, factor = 1)
 target_queue_size_20_5 <- calc_target_queue_size(tail(control_periods_5,1)$Adds_20, 6, factor = 1)
 target_queue_size_40_5 <- calc_target_queue_size(tail(control_periods_5,1)$Adds_40, 6, factor = 1)
 
@@ -775,9 +969,10 @@ mean_wait3 <- calc_target_mean_wait(6, factor = 1)
 
 # Target capacity after difference
 current_target_capacity_5 <- calc_target_capacity(control_periods_5$Adds[8], 6, factor = 1)
-future_target_capacity_0_5 <- calc_target_capacity(control_periods_5$Adds[19], 6, factor = 1)
-future_target_capacity_20_5 <- calc_target_capacity(control_periods_5$Adds_20[19], 6, factor = 1)
-future_target_capacity_40_5 <- calc_target_capacity(control_periods_5$Adds_40[19], 6, factor = 1)
+future_target_capacity_0_5 <- calc_target_capacity(control_periods_5$Adds[16], 6, factor = 1)
+#future_target_capacity_0_5 <- calc_target_capacity(control_periods_5a$Adds[14], 6, factor = 1)
+future_target_capacity_20_5 <- calc_target_capacity(control_periods_5$Adds_20[16], 6, factor = 1)
+future_target_capacity_40_5 <- calc_target_capacity(control_periods_5$Adds_40[16], 6, factor = 1)
 
 # capacity that release once implemented:
 
@@ -787,42 +982,74 @@ weekly_capacity_release_40_5 <- current_target_capacity_5 - future_target_capaci
 
 
 
+# what is queue at T3
+t3_queue_size_5 <- tno_queue16_5 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_20_5 <- tno_queue_20_16_5 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+t3_queue_size_40_5 <- tno_queue_40_16_5 %>% filter(dates >= as.Date("01/01/2027", "%d/%m/%Y")) %>% head(1) %>% pull(queue_size)
+
+# Difference from T3 to target
+t3_queue_size_5 - target_queue_size_5
+t3_queue_size_20_5 - target_queue_size_20_5
+t3_queue_size_40_5 - target_queue_size_20_5
+
+# How long after T3 to target
+## Relief capacity at T3 - amount capacity over demand at T3
+# 0
+control_periods_5[14,]$Removes - control_periods_5[14,]$Adds
+# How long till target in weeks
+(t3_queue_size_5 - target_queue_size_5) / (control_periods_5[14,]$Removes - control_periods_5[14,]$Adds)
+
+# 20
+control_periods_5[14,]$Removes_20 - control_periods_5[14,]$Adds_20
+# How long till target in weeks
+(t3_queue_size_20_5 - target_queue_size_20_5) / (control_periods_5[14,]$Removes_20 - control_periods_5[14,]$Adds_20)
+
+#40
+control_periods_5[14,]$Removes_40 - control_periods_5[14,]$Adds_40
+# How long till target in weeks
+(t3_queue_size_40_5 - target_queue_size_40_5) / (control_periods_5[14,]$Removes_40 - control_periods_5[14,]$Adds_40)
+
+difftime(target_date_5$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_20_date_5$dates, programme_dts$startdate[2], units = "weeks")
+difftime(target_40_date_5$dates, programme_dts$startdate[2], units = "weeks")
 
 # Phases 0
-tno_queue19_5 <-
-  tno_queue19_5 %>% 
+tno_queue16_5 <-
+  tno_queue16_5 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_0 = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 # Phases 0
-tno_queue_20_19_5 <-
-  tno_queue_20_19_5 %>% 
+tno_queue_20_16_5 <-
+  tno_queue_20_16_5 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_20 = ifelse((queue_size <= target_queue_size_20) & (dates > as.Date('2023-01-01')), 1,0)
   )
 # Phases 0
-tno_queue_40_19_5 <-
-  tno_queue_40_19_5 %>% 
+tno_queue_40_16_5 <-
+  tno_queue_40_16_5 %>% 
   mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
           , meet_future_40 = ifelse((queue_size <= target_queue_size_40) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 
 # Meeting target on it's own
-tno_queue19_5 %>% 
+tno_queue16_5 %>% 
   filter(meet_target == 1) %>% 
   slice_head()
 
 # Meeting target in future without intervention
 target_date_5 <-
-  tno_queue19_5 %>% 
+  tno_queue16_5 %>% 
   filter(meet_future_0 == 1) %>% 
   slice_head()
+
 target_date_5
+
 # Meeting target in future (20% reduction)
 target_20_date_5 <-
-  tno_queue_20_19_5 %>% 
+  tno_queue_20_16_5 %>% 
   filter(meet_future_20 == 1) %>% 
   slice_head()
 
@@ -830,26 +1057,32 @@ target_20_date_5
 
 # Meeting target in future (40% reduction)
 target_40_date_5 <-
-  tno_queue_40_19_5 %>% 
+  tno_queue_40_16_5 %>% 
   filter(meet_future_40 == 1) %>% 
   slice_head()
 
 target_40_date_5
 
-calc_target_capacity(control_periods_5$Adds[19], target_wait = 6, factor = 1)
-calc_target_capacity(control_periods_5$Adds_20[19], target_wait = 6, factor = 1)
-calc_target_capacity(control_periods_5$Adds_40[19], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods_5$Adds[16], target_wait = 6, factor = 1)
+#calc_target_capacity(control_periods_5a$Adds[14], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods_5$Adds_20[16], target_wait = 6, factor = 1)
+calc_target_capacity(control_periods_5$Adds_40[16], target_wait = 6, factor = 1)
 
 ######
 # Plot
 
 with_popn_growth_5 <-
-  ggplot(tno_queue19_5, aes(dates, queue_size)) +
-  geom_rect(xmin = programme_dts$dates[1], xmax=programme_dts$dates[2], ymin=0, ymax=Inf, alpha=0.02
-            , fill="khaki2")+
+  ggplot(tno_queue16_5, aes(dates, queue_size)) +
+  geom_vline(xintercept = programme_dts$startdate[2], alpha=0.4
+             , colour="red")+
   
-  geom_line(col=colours[2], data=tno_queue_20_19_5) +
-  geom_line(col=colours[3], data=tno_queue_40_19_5) +
+  annotate("rect", xmin = programme_dts$startdate[1], xmax=programme_dts$enddate[1], ymin=0, ymax=Inf, alpha=0.5
+           , fill="khaki1")+
+  annotate("rect", xmin = programme_dts$startdate[3], xmax=programme_dts$enddate[3], ymin=0, ymax=Inf, alpha=0.2
+           , fill="seagreen")+
+  
+  geom_line(col=colours[2], data=tno_queue_20_16_5) +
+  geom_line(col=colours[3], data=tno_queue_40_16_5) +
   geom_line(col=colours[1]) +
   
   geom_hline(yintercept = target_queue_size_5, col=colours[1], linetype="dashed")+
@@ -863,16 +1096,33 @@ with_popn_growth_5 <-
   geom_point(data=target_40_date_5, shape=4, col = colours[3], size = 5, stroke = 2)+
   
   #geom_vline(data = programme_dts, aes(xintercept = dates), col="red", linetype="dashed")+
-  geom_text(x = as.Date("01-04-2027", format = "%d-%m-%Y")
-            , label="T3 - T4"
-            , y=4800
+  geom_text(x = as.Date("01-10-2026", format = "%d-%m-%Y")
+            , label="T2"
+            , y=8000
             , col="black"
-            , size=3
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
+  geom_text(x = as.Date("01-01-2027", format = "%d-%m-%Y")
+            , label="T3"
+            , y=8000
+            , col="black"
+            , size=4
             , family = "sans"
             #          , fontface = "bold"
   )+
   
+  geom_text(x = as.Date("01-04-2028", format = "%d-%m-%Y")
+            , label="T4"
+            , y=8000
+            , col="black"
+            , size=4
+            , family = "sans"
+            #          , fontface = "bold"
+  )+
   
+  scale_y_continuous(labels=comma)+
   scale_x_date(date_breaks = "3 month"
                , date_labels = "%b-%y"
                , limits = c(
@@ -880,16 +1130,22 @@ with_popn_growth_5 <-
                  , as.Date("2029-04-01")
                  
                )
-               , expand = c(0,0))+
+               , expand = c(0,0)
+               , 
+               )+
   labs(
-    title = "T&O: First GP referral to first Outpatients waiting list (5% relief capacity maintained):",
-    subtitle = "Dotted line represents target queue size \n
-    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced",
+    title = bquote(bold("Model 3: ") ~ "T&O - First GP referral to first Outpatients waiting list (5% relief capacity maintained):"),
+    subtitle = "    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced
+    Dotted line represents target queue size",
     y = "Queue Size",
     x = "Month"
   )+
-  theme(axis.text.x = element_text(angle=90))
+  theme(axis.text.x = element_text(angle=90),plot.margin = margin(2,4,2,2, "mm") )
 
 with_popn_growth_5
 
 
+
+with_popn_growth
+with_popn_growth_2
+with_popn_growth_5
