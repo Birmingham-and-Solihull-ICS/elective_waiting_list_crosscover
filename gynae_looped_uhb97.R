@@ -1376,3 +1376,13 @@ saveRDS(gynae_sim16_5, "./output/gynae/gynae_sim16_5.rds")
 saveRDS(gynae_sim_20_16_5, "./output/gynae/gynae_sim_20_16_5.rds")
 saveRDS(gynae_sim_40_16_5, "./output/gynae/gynae_sim_40_16_5.rds")
 ###############################
+
+gynae_sim16 <- readRDS("./output/gynae/gynae_sim16.rds")
+gynae_sim_20_16 <- readRDS("./output/gynae/gynae_sim_20_16.rds")
+gynae_sim_40_16 <- readRDS("./output/gynae/gynae_sim_40_16.rds")
+gynae_sim16_2 <- readRDS("./output/gynae/gynae_sim16_2.rds")
+gynae_sim_20_16_2 <- readRDS("./output/gynae/gynae_sim_20_16_2.rds")
+gynae_sim_40_16_2 <- readRDS("./output/gynae/gynae_sim_40_16_2.rds")
+gynae_sim16_5 <- readRDS("./output/gynae/gynae_sim16_5.rds")
+gynae_sim_20_16_5 <- readRDS("./output/gynae/gynae_sim_20_16_5.rds")
+gynae_sim_40_16_5 <- readRDS("./output/gynae/gynae_sim_40_16_5.rds")
