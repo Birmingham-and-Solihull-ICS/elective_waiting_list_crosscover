@@ -327,14 +327,27 @@ with_popn_growth <-
   geom_point(data=target_20_date, shape=4, col = colours[2], size = 5, stroke = 2)+
   geom_point(data=target_40_date, shape=4, col = colours[3], size = 5, stroke = 2)+
   
-  #geom_vline(data = programme_dts, aes(xintercept = dates), col="red", linetype="dashed")+
+  geom_text(data = data.frame(dts = c(as.Date("2023-01-01"),as.Date("2023-01-01"))
+                              , label = c("Target queue size", "Target queue size")
+                              , y = c(target_queue_size, target_queue_size_0)
+                              
+  ), aes(x = dts, label=label, y= y)
+  , col = c(colours[1], colours[2])
+  , size=3.5
+  , family = "sans"
+  , fontface = "italic"
+  , hjust = -0
+  , vjust = -1
+  )+
+  
+  
   geom_text(x = as.Date("01-10-2026", format = "%d-%m-%Y")
             , label="T2"
             , y=8000
             , col="black"
             , size=4
             , family = "sans"
-            #          , fontface = "bold"
+            
   )+
   geom_text(x = as.Date("01-01-2027", format = "%d-%m-%Y")
             , label="T3"
@@ -342,18 +355,32 @@ with_popn_growth <-
             , col="black"
             , size=4
             , family = "sans"
-            #          , fontface = "bold"
+            
   )+
   
-  geom_text(x = as.Date("01-04-2028", format = "%d-%m-%Y")
+  geom_text(data = tno_t4_date_0
             , label="T4"
-            , y=8000
+            ,# y=8000
             , col="black"
             , size=4
             , family = "sans"
+            , hjust = -0.75
+            , vjust = -1
+            
             #          , fontface = "bold"
   )+
   
+  geom_text(data = target_0_date
+            , label="T5"
+            #, y=8000
+            , col="black"
+            , size=4
+            , family = "sans"
+            , hjust = -0.75
+            , vjust = -1
+            
+            #          , fontface = "bold"
+  )+
   
   scale_y_continuous(labels=comma)+
   scale_x_date(date_breaks = "3 month"
@@ -363,7 +390,9 @@ with_popn_growth <-
                  , as.Date("2029-04-01")
                  
                )
-               , expand = c(0,0))+
+               , expand = c(0,0)
+               , 
+  )+
   labs(
     title = bquote(bold("Model 1: ") ~"T&O - First GP referral to first Outpatients waiting list (capacity maintained as at last data point):"),
     subtitle = "    Green = current demand projected forward, Orange = 20% demand reduced, Purple = 40% demand reduced.
@@ -1373,3 +1402,16 @@ saveRDS(tno_sim16_5, "./output/tno/tno_sim16_5.rds")
 saveRDS(tno_sim_20_16_5, "./output/tno/tno_sim_20_16_5.rds")
 saveRDS(tno_sim_40_16_5, "./output/tno/tno_sim_40_16_5.rds")
 ###############################
+
+
+tno_sim16 <- readRDS("./output/tno/tno_sim16.rds")
+tno_sim_20_16 <- readRDS("./output/tno/tno_sim_20_16.rds")
+tno_sim_40_16 <- readRDS("./output/tno/tno_sim_40_16.rds")
+tno_sim16_2 <- readRDS("./output/tno/tno_sim16_2.rds")
+tno_sim_20_16_2 <- readRDS("./output/tno/tno_sim_20_16_2.rds")
+tno_sim_40_16_2 <- readRDS("./output/tno/tno_sim_40_16_2.rds")
+tno_sim16_5 <- readRDS("./output/tno/tno_sim16_5.rds")
+tno_sim_20_16_5 <- readRDS("./output/tno/tno_sim_20_16_5.rds")
+tno_sim_40_16_5 <- readRDS("./output/tno/tno_sim_40_16_5.rds")
+
+

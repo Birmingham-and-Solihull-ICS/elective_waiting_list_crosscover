@@ -1374,3 +1374,13 @@ saveRDS(uro_sim16_5, "./output/urology/uro_sim16_5.rds")
 saveRDS(uro_sim_20_16_5, "./output/urology/uro_sim_20_16_5.rds")
 saveRDS(uro_sim_40_16_5, "./output/urology/uro_sim_40_16_5.rds")
 ###############################
+
+uro_sim16 <- readRDS("./output/urology/uro_sim16.rds")
+uro_sim_20_16 <- readRDS("./output/urology/uro_sim_20_16.rds")
+uro_sim_40_16 <- readRDS("./output/urology/uro_sim_40_16.rds")
+uro_sim16_2 <- readRDS("./output/urology/uro_sim16_2.rds")
+uro_sim_20_16_2 <- readRDS("./output/urology/uro_sim_20_16_2.rds")
+uro_sim_40_16_2 <- readRDS("./output/urology/uro_sim_40_16_2.rds")
+uro_sim16_5 <- readRDS("./output/urology/uro_sim16_5.rds")
+uro_sim_20_16_5 <- readRDS("./output/urology/uro_sim_20_16_5.rds")
+uro_sim_40_16_5 <- readRDS("./output/urology/uro_sim_40_16_5.rds")

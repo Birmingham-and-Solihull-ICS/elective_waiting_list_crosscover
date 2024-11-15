@@ -580,8 +580,8 @@ target_queue_size_40_2 <- calc_target_queue_size(tail(control_periods_2,1)$Adds_
 # Phases 0
 ent_queue16_2 <-
   ent_queue16_2 %>% 
-  mutate( meet_target = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
-          , meet_future_0 = ifelse((queue_size <= target_queue_size) & (dates > as.Date('2023-01-01')), 1,0)
+  mutate( meet_target = ifelse((queue_size <= target_queue_size_2) & (dates > as.Date('2023-01-01')), 1,0)
+          , meet_future_0 = ifelse((queue_size <= target_queue_size_2) & (dates > as.Date('2023-01-01')), 1,0)
   )
 
 # Phases 0
@@ -1375,13 +1375,23 @@ with_popn_growth_5
 
 ########### Save ################
 
-saveRDS(ent_sim16, "./output/ent/ent_sim16.rds")
-saveRDS(ent_sim_20_16, "./output/ent/ent_sim_20_16.rds")
-saveRDS(ent_sim_40_16, "./output/ent/ent_sim_40_16.rds")
-saveRDS(ent_sim16_2, "./output/ent/ent_sim16_2.rds")
-saveRDS(ent_sim_20_16_2, "./output/ent/ent_sim_20_16_2.rds")
-saveRDS(ent_sim_40_16_2, "./output/ent/ent_sim_40_16_2.rds")
-saveRDS(ent_sim16_5, "./output/ent/ent_sim16_5.rds")
-saveRDS(ent_sim_20_16_5, "./output/ent/ent_sim_20_16_5.rds")
-saveRDS(ent_sim_40_16_5, "./output/ent/ent_sim_40_16_5.rds")
+saveRDS(ent_sim17, "./output/ent/ent_sim17.rds")
+saveRDS(ent_sim_20_17, "./output/ent/ent_sim_20_17.rds")
+saveRDS(ent_sim_40_17, "./output/ent/ent_sim_40_17.rds")
+saveRDS(ent_sim17_2, "./output/ent/ent_sim17_2.rds")
+saveRDS(ent_sim_20_17_2, "./output/ent/ent_sim_20_17_2.rds")
+saveRDS(ent_sim_40_17_2, "./output/ent/ent_sim_40_17_2.rds")
+saveRDS(ent_sim17_5, "./output/ent/ent_sim17_5.rds")
+saveRDS(ent_sim_20_17_5, "./output/ent/ent_sim_20_17_5.rds")
+saveRDS(ent_sim_40_17_5, "./output/ent/ent_sim_40_17_5.rds")
 ###############################
+
+ent_sim17 <- readRDS("./output/ent/ent_sim17.rds")
+ent_sim_20_17 <- readRDS("./output/ent/ent_sim_20_17.rds")
+ent_sim_40_17 <- readRDS("./output/ent/ent_sim_40_17.rds")
+ent_sim17_2 <- readRDS("./output/ent/ent_sim17_2.rds")
+ent_sim_20_17_2 <- readRDS("./output/ent/ent_sim_20_17_2.rds")
+ent_sim_40_17_2 <- readRDS("./output/ent/ent_sim_40_17_2.rds")
+ent_sim17_5 <- readRDS("./output/ent/ent_sim17_5.rds")
+ent_sim_20_17_5 <- readRDS("./output/ent/ent_sim_20_17_5.rds")
+ent_sim_40_17_5 <- readRDS("./output/ent/ent_sim_40_17_5.rds")

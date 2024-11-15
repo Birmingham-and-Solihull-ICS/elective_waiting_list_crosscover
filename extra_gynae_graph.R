@@ -328,3 +328,5 @@ Extra_gynae_graph_20241112 <-
         , text = element_text(family="sans"))
 
 Extra_gynae_graph_20241112 
+
+ggsave("./output/gynae_20_black_2.png", scale = 0.8)
